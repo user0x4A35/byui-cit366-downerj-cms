@@ -1,0 +1,15 @@
+{
+  "editor.fontSize": 16,
+  "editor.tabSize": 2,
+  "editor.tabCompletion": true,
+  "editor.parameterHints.cycle": true,
+  "editor.acceptSuggestionOnEnter": "off",
+  "editor.wordBasedSuggestions": false,
+  "editor.suggestOnTriggerCharacters": false,
+  "editor.parameterHints": false,
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": true,
+    "strings": true
+  },
+}
