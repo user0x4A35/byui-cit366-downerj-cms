@@ -21,9 +21,9 @@ export class ContactService {
     for (let contact of this.contacts) {
       if (contact.id === id) {
         return contact;
-      } else {
-        return null;
       }
     }
+
+    return null;
   }
 }
