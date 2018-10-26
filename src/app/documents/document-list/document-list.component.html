@@ -9,10 +9,13 @@
     <div class="center-panel">
       <div class="row">
         <div class="col-xs-12">
-          <cms-document-item 
+          <!-- <cms-document-item 
             *ngFor="let document of documents" 
             [document]="document"
-            (click)="onSelected(document)">
+            (click)="onSelected(document)"> -->
+            <cms-document-item 
+            *ngFor="let document of documents" 
+            [document]="document">
           </cms-document-item>
         </div>
       </div>
