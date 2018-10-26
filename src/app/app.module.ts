@@ -21,6 +21,7 @@ import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
 import { DocumentViewComponent } from './documents/document-view/document-view.component';
 import { DocumentEditComponent } from './documents/document-edit/document-edit.component';
+import { WindRefService } from './wind-ref.service';
 
 @NgModule({
   declarations: [
@@ -47,7 +48,7 @@ import { DocumentEditComponent } from './documents/document-edit/document-edit.c
     HttpModule,
     AppRoutingModule,
   ],
-  providers: [],
+  providers: [WindRefService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
