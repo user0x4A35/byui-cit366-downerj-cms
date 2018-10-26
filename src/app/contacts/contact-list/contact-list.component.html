@@ -6,16 +6,16 @@
           <span class="u-header-2">Contacts</span>
         </div>
         <div class="pull-right">
-          <button class="btn btn-success">New Contact</button>
+          <button class="btn btn-success" routerLink="/contacts/new">New Contact</button>
         </div>
       </div>
       <div class="panel-body">
         <div class="row">
           <div class="col-xs-12">
             <cms-contact-item 
-              *ngFor="let contact of contacts" 
-              [contact]="contact"
-              (click)="onSelected(contact)"></cms-contact-item>
+              *ngFor="let contact of contacts"
+              [contact]="contact">
+            </cms-contact-item>
           </div>
         </div>
       </div>

@@ -22,7 +22,7 @@ export class DocumentDetailComponent implements OnInit {
 
   ngOnInit() {
     this.route.params.subscribe((params: Params) => {
-      this.document = this.documentService.getDocument(params.id);
+      this.document = this.documentService.getDocument(params['id']);
     });
     this.nativeWindow = this.windRefService.getNativeWindow();
   }
