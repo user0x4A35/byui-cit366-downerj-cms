@@ -12,9 +12,11 @@ export class DocumentsService {
   documentSelectedEvent: EventEmitter<Document> = new EventEmitter<Document>();
   documentChangedEvent: EventEmitter<Document[]> = new EventEmitter<Document[]>();
   documentListChangedEvent: Subject<Document[]> = new Subject<Document[]>();
+  maxDocumentID: number;
 
   constructor() {
     this.documents = MOCKDOCUMENTS;
+    this.maxDocumentID = this.getMaxID();
   }
 
   getDocuments(): Document[] {
@@ -29,6 +31,44 @@ export class DocumentsService {
     }
 
     return null;
+  }
+
+  getMaxID() {
+    let maxID = 0;
+    for (let document of this.documents) {
+      let currentID = +document.id;
+      if (currentID > maxID) {
+        maxID = currentID;
+      }
+    }
+
+    return maxID;
+  }
+
+  addDocument(document: Document) {
+    if (!document) {
+      return;
+    }
+
+    this.maxDocumentID++;
+    document.id = (this.maxDocumentID).toString();
+    this.documents.push(document);
+    this.documentListChangedEvent.next(this.documents.slice());
+  }
+
+  updateDocument(originalDocument: Document, newDocument: Document) {
+    if (!originalDocument || !newDocument) {
+      return;
+    }
+
+    let index = this.documents.indexOf(originalDocument);
+    if (index < 0) {
+      return;
+    }
+
+    newDocument.id = originalDocument.id;
+    this.documents[index] = newDocument;
+    this.documentListChangedEvent.next(this.documents.slice());
   }
 
   deleteDocument(document: Document) {
