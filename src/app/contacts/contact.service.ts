@@ -44,7 +44,7 @@ export class ContactService {
     return maxID;
   }
 
-  addDocument(contact: Contact) {
+  addContact(contact: Contact) {
     if (!contact) {
       return;
     }
@@ -55,7 +55,7 @@ export class ContactService {
     this.contactListChangedEvent.next(this.contacts.slice());
   }
 
-  updateDocument(originalContact: Contact, newContact: Contact) {
+  updateContact(originalContact: Contact, newContact: Contact) {
     if (!originalContact || !newContact) {
       return;
     }

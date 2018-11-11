@@ -25,20 +25,17 @@ export class DocumentEditComponent implements OnInit {
       this.editMode = false;
       let id = params['id'];
       if (id === null || id === undefined) {
-        console.log('void id');
         return;
       }
 
       let document = this.documentService.getDocument(id);
       if (!document) {
-        console.log('void document');
         return;
       }
 
       this.originalDocument = document;
       this.editMode = true;
       this.document = JSON.parse(JSON.stringify(document));
-      console.log(document);
     });
   }
 
