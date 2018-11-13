@@ -12,7 +12,7 @@ import { NgForm } from '@angular/forms';
 export class ContactEditComponent implements OnInit {
   originalContact: Contact;
   contact: Contact = null;
-  contactsGroup: Contact[] = [];
+  groupContacts: Contact[] = [];
   editMode: boolean = false;
   hasGroup: boolean = false;
   invalidGroupContact: boolean = false;
@@ -41,13 +41,20 @@ export class ContactEditComponent implements OnInit {
       this.contact = JSON.parse(JSON.stringify(contact));
 
       if (contact.group) {
-        this.contactsGroup = contact.group.slice();
+        this.groupContacts = contact.group.slice();
       }
     });
   }
 
   onSubmit(form: NgForm) {
-    let contact = new Contact('', form.value.name, form.value.email, form.value.phone, form.value.imageUrl, null);
+    let contact = new Contact(
+      form.value.id,
+      form.value.name, 
+      form.value.email, 
+      form.value.phone, 
+      form.value.imageUrl, 
+      this.groupContacts
+    );
     if (this.editMode === true) {
       this.contactService.updateContact(this.originalContact, contact);
     } else {
@@ -70,8 +77,8 @@ export class ContactEditComponent implements OnInit {
       return true;
     }
 
-    for (let i = 0; i < this.contactsGroup.length; i++) {
-      if (newContact.id === this.contactsGroup[i].id) {
+    for (let i = 0; i < this.groupContacts.length; i++) {
+      if (newContact.id === this.groupContacts[i].id) {
         return true;
       }
     }
@@ -85,15 +92,15 @@ export class ContactEditComponent implements OnInit {
     if (this.invalidGroupContact) {
       return;
     }
-    this.contactsGroup.push(selectedContact);
+    this.groupContacts.push(selectedContact);
   }
 
   onRemoveItem(idx: number) {
-    if (idx < 0 || idx > this.contactsGroup.length) {
+    if (idx < 0 || idx > this.groupContacts.length) {
       return;
     }
 
-    this.contactsGroup.splice(idx, 1);
+    this.groupContacts.splice(idx, 1);
     this.invalidGroupContact = false;
   }
 }
