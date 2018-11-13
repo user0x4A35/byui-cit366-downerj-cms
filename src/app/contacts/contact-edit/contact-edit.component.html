@@ -82,7 +82,7 @@
         </div>
       </div>
 
-      <div class="row" *ngIf="name.untouched || !name.valid || email.untouched || !email.valid">
+      <div class="row" *ngIf="(name.touched && name.invalid) || (email.touched && email.invalid)">
         <div class="col-sm-12 alert alert-danger">
           The Name and Email are required.
         </div>
