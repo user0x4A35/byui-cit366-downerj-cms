@@ -1,4 +1,5 @@
 import { Injectable, EventEmitter } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 
 import { MOCKDOCUMENTS } from './MOCKDOCUMENTS';
 import { Document } from './document.model';
@@ -14,13 +15,32 @@ export class DocumentsService {
   documentListChangedEvent: Subject<Document[]> = new Subject<Document[]>();
   maxDocumentID: number;
 
-  constructor() {
-    this.documents = MOCKDOCUMENTS;
+  constructor(private http: HttpClient) {
+    // this.documents = MOCKDOCUMENTS;
     this.maxDocumentID = this.getMaxID();
   }
 
-  getDocuments(): Document[] {
-    return this.documents.slice();
+  getDocuments() {
+    // return this.documents.slice();
+    this
+    .http
+    .get('https://byui-cit366-cms-downerj.firebaseio.com/documents.json')
+    .subscribe((documents: Document[]) => {
+      this.documents = documents;
+      this.maxDocumentID = this.getMaxID();
+      this.documents.sort((lhs: Document, rhs: Document): number => {
+        if (lhs < rhs) {
+          return -1;
+        } else if (lhs === rhs) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+      this.documentListChangedEvent.next(this.documents.slice());
+    }, (err: any) => {
+      console.error(err);
+    });
   }
 
   getDocument(id: string): Document {
@@ -33,7 +53,7 @@ export class DocumentsService {
     return null;
   }
 
-  getMaxID() {
+  getMaxID(): number {
     let maxID = 0;
     for (let document of this.documents) {
       let currentID = +document.id;
