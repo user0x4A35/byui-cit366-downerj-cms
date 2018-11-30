@@ -16,12 +16,11 @@ export class DocumentsService {
   maxDocumentID: number;
 
   constructor(private http: HttpClient) {
-    // this.documents = MOCKDOCUMENTS;
+    this.getDocuments();
     this.maxDocumentID = this.getMaxID();
   }
 
-  getDocuments() {
-    // return this.documents.slice();
+  getDocuments(): void {
     this
     .http
     .get('https://byui-cit366-cms-downerj.firebaseio.com/documents.json')
@@ -44,6 +43,10 @@ export class DocumentsService {
   }
 
   getDocument(id: string): Document {
+    if (!this.documents) {
+      return null;
+    }
+
     for (let document of this.documents) {
       if (document.id === id) {
         return document;
@@ -65,7 +68,7 @@ export class DocumentsService {
     return maxID;
   }
 
-  addDocument(document: Document) {
+  addDocument(document: Document): void {
     if (!document) {
       return;
     }
@@ -73,10 +76,10 @@ export class DocumentsService {
     this.maxDocumentID++;
     document.id = (this.maxDocumentID).toString();
     this.documents.push(document);
-    this.documentListChangedEvent.next(this.documents.slice());
+    this.storeDocuments();
   }
 
-  updateDocument(originalDocument: Document, newDocument: Document) {
+  updateDocument(originalDocument: Document, newDocument: Document): void {
     if (!originalDocument || !newDocument) {
       return;
     }
@@ -88,10 +91,10 @@ export class DocumentsService {
 
     newDocument.id = originalDocument.id;
     this.documents[index] = newDocument;
-    this.documentListChangedEvent.next(this.documents.slice());
+    this.storeDocuments();
   }
 
-  deleteDocument(document: Document) {
+  deleteDocument(document: Document): void {
     if (!document) {
       return;
     }
@@ -102,6 +105,19 @@ export class DocumentsService {
     }
 
     this.documents.splice(index, 1);
-    this.documentChangedEvent.emit(this.documents.slice());
+    this.storeDocuments();
+  }
+
+  storeDocuments(): void {
+    let json = JSON.stringify(this.documents);
+    let header = new HttpHeaders();
+    header.set('Content-Type', 'application/json');
+    this
+    .http
+    .put('https://byui-cit366-cms-downerj.firebaseio.com/documents.json', json, {
+      headers: header
+    }).subscribe(() => {
+      this.documentListChangedEvent.next((this.documents.slice()));
+    });
   }
 }

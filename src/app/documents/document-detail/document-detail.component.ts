@@ -18,7 +18,7 @@ export class DocumentDetailComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private windRefService: WindRefService
-    ) { }
+  ) { }
 
   ngOnInit() {
     this.route.params.subscribe((params: Params) => {
