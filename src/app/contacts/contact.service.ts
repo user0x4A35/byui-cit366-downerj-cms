@@ -1,7 +1,7 @@
 import { Injectable, EventEmitter } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 
 import { Contact } from './contact.model';
-import { MOCKCONTACTS } from './MOCKCONTACTS';
 import { Subject } from 'rxjs';
 
 @Injectable({
@@ -14,12 +14,30 @@ export class ContactService {
   contactListChangedEvent: Subject<Contact[]> = new Subject<Contact[]>();
   maxContactID: number;
 
-  constructor() { 
-    this.contacts = MOCKCONTACTS;
+  constructor(private http: HttpClient) { 
+    this.getContacts();
   }
 
-  getContacts(): Contact[] {
-    return this.contacts.slice();
+  getContacts(): void {
+    this
+    .http
+    .get('https://byui-cit366-cms-downerj.firebaseio.com/contacts.json')
+    .subscribe((contacts: Contact[]) => {
+      this.contacts = contacts;
+      this.maxContactID = this.getMaxID();
+      this.contacts.sort((lhs: Contact, rhs: Contact): number => {
+        if (lhs.id < rhs.id) {
+          return -1;
+        } else if (lhs.id === rhs.id) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+      this.contactListChangedEvent.next(this.contacts.slice());
+    }, (err: any) => {
+      console.error(err);
+    });
   }
 
   getContact(id: string): Contact {
@@ -32,7 +50,7 @@ export class ContactService {
     return null;
   }
 
-  getMaxID() {
+  getMaxID(): number {
     let maxID = 0;
     for (let contact of this.contacts) {
       let currentID = +contact.id;
@@ -44,7 +62,7 @@ export class ContactService {
     return maxID;
   }
 
-  addContact(contact: Contact) {
+  addContact(contact: Contact): void {
     if (!contact) {
       return;
     }
@@ -52,10 +70,10 @@ export class ContactService {
     this.maxContactID++;
     contact.id = (this.maxContactID).toString();
     this.contacts.push(contact);
-    this.contactListChangedEvent.next(this.contacts.slice());
+    this.storeContacts();
   }
 
-  updateContact(originalContact: Contact, newContact: Contact) {
+  updateContact(originalContact: Contact, newContact: Contact): void {
     if (!originalContact || !newContact) {
       return;
     }
@@ -67,10 +85,10 @@ export class ContactService {
 
     newContact.id = originalContact.id;
     this.contacts[index] = newContact;
-    this.contactListChangedEvent.next(this.contacts.slice());
+    this.storeContacts();
   }
 
-  deleteContact(contact: Contact) {
+  deleteContact(contact: Contact): void {
     if (!contact) {
       return;
     }
@@ -81,6 +99,19 @@ export class ContactService {
     }
 
     this.contacts.splice(index, 1);
-    this.contactChangedEvent.emit(this.contacts.slice());
+    this.storeContacts();
+  }
+
+  storeContacts(): void {
+    let json = JSON.stringify(this.contacts);
+    let header = new HttpHeaders();
+    header.set('Content-Type', 'application/json');
+    this
+    .http
+    .put('https://byui-cit366-cms-downerj.firebaseio.com/contacts.json', json, {
+      headers: header
+    }).subscribe(() => {
+      this.contactListChangedEvent.next((this.contacts.slice()));
+    });
   }
 }

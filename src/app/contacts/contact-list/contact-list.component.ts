@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 
 import { Contact } from '../contact.model';
 import { ContactService } from '../contact.service';
@@ -17,7 +17,6 @@ export class ContactListComponent implements OnInit, OnDestroy {
   constructor(private contactService: ContactService) { }
 
   ngOnInit() {
-    this.contacts = this.contactService.getContacts();
     this.contactService.contactChangedEvent.subscribe((contacts) => {
       this.contacts = contacts.slice();
     });

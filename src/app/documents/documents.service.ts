@@ -1,7 +1,6 @@
 import { Injectable, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 
-import { MOCKDOCUMENTS } from './MOCKDOCUMENTS';
 import { Document } from './document.model';
 import { Subject } from 'rxjs';
 
@@ -17,7 +16,6 @@ export class DocumentsService {
 
   constructor(private http: HttpClient) {
     this.getDocuments();
-    this.maxDocumentID = this.getMaxID();
   }
 
   getDocuments(): void {
@@ -28,9 +26,9 @@ export class DocumentsService {
       this.documents = documents;
       this.maxDocumentID = this.getMaxID();
       this.documents.sort((lhs: Document, rhs: Document): number => {
-        if (lhs < rhs) {
+        if (lhs.id < rhs.id) {
           return -1;
-        } else if (lhs === rhs) {
+        } else if (lhs.id === rhs.id) {
           return 0;
         } else {
           return 1;
