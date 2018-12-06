@@ -22,7 +22,7 @@ export class MessageService {
   initMessages(): void {
     this
     .http
-    .get('https://byui-cit366-cms-downerj.firebaseio.com/messages.json')
+    .get('http://localhost:3000/messages')
     .subscribe((messages: Message[]) => {
       this.messages = messages;
       this.maxMessageID = this.getMaxID();
@@ -64,8 +64,29 @@ export class MessageService {
   }
 
   addMessage(message: Message): void {
-    this.messages.push(message);
-    this.storeMessages();
+    if (!message) {
+      return;
+    }
+
+    // this.messages.push(message);
+    // this.storeMessages();
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    message.id = '';
+    const strMessage = JSON.stringify(message);
+
+    this.http
+    .post('http://localhost:3000/messages', strMessage, {headers: headers})
+    // .map((response: Response) => {
+    //   return response.json();
+    // })
+    .subscribe((messages: Message[]) => {
+      this.messages = messages;
+      this.messagesChangedEvent.next(this.messages.slice());
+    });
   }
 
   storeMessages(): void {
@@ -74,7 +95,7 @@ export class MessageService {
     header.set('Content-Type', 'application/json');
     this
     .http
-    .put('https://byui-cit366-cms-downerj.firebaseio.com/messages.json', json, {
+    .put('http://localhost:3000/messages', json, {
       headers: header
     }).subscribe(() => {
       this.messagesChangedEvent.next((this.messages.slice()));

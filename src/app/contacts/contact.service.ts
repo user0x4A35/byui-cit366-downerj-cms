@@ -21,7 +21,7 @@ export class ContactService {
   getContacts(): void {
     this
     .http
-    .get('https://byui-cit366-cms-downerj.firebaseio.com/contacts.json')
+    .get('http://localhost:3000/contacts')
     .subscribe((contacts: Contact[]) => {
       this.contacts = contacts;
       this.maxContactID = this.getMaxID();
@@ -67,10 +67,27 @@ export class ContactService {
       return;
     }
 
-    this.maxContactID++;
-    contact.id = (this.maxContactID).toString();
-    this.contacts.push(contact);
-    this.storeContacts();
+    // this.maxContactID++;
+    // contact.id = (this.maxContactID).toString();
+    // this.contacts.push(contact);
+    // this.storeContacts();
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    contact.id = '';
+    const strContact = JSON.stringify(contact);
+
+    this.http
+    .post('http://localhost:3000/contacts', strContact, {headers: headers})
+    // .map((response: Response) => {
+    //   return response.json();
+    // })
+    .subscribe((contacts: Contact[]) => {
+      this.contacts = contacts;
+      this.contactChangedEvent.next(this.contacts.slice());
+    });
   }
 
   updateContact(originalContact: Contact, newContact: Contact): void {
@@ -83,9 +100,25 @@ export class ContactService {
       return;
     }
 
-    newContact.id = originalContact.id;
-    this.contacts[index] = newContact;
-    this.storeContacts();
+    // newContact.id = originalContact.id;
+    // this.contacts[index] = newContact;
+    // this.storeContacts();
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    const strContact = JSON.stringify(newContact);
+
+    this.http
+    .put(`http://localhost:3000/contacts/${originalContact.id}`, strContact, {headers: headers})
+    // .map((response: Response) => {
+    //   return response.json();
+    // })
+    .subscribe((contacts: Contact[]) => {
+      this.contacts = contacts;
+      this.contactChangedEvent.next(this.contacts.slice());
+    });
   }
 
   deleteContact(contact: Contact): void {
@@ -98,8 +131,17 @@ export class ContactService {
       return;
     }
 
-    this.contacts.splice(index, 1);
-    this.storeContacts();
+    // this.contacts.splice(index, 1);
+    // this.storeContacts();
+
+    this.http.delete(`http://localhost:3000/contacts/${contact.id}`)
+    // .map((response: Response) => {
+    //   return response.json();
+    // })
+    .subscribe((contacts: Contact[]) => {
+      this.contacts = contacts;
+      this.contactChangedEvent.next(this.contacts.slice());
+    })
   }
 
   storeContacts(): void {
@@ -108,7 +150,7 @@ export class ContactService {
     header.set('Content-Type', 'application/json');
     this
     .http
-    .put('https://byui-cit366-cms-downerj.firebaseio.com/contacts.json', json, {
+    .put('http://localhost:3000/contacts', json, {
       headers: header
     }).subscribe(() => {
       this.contactListChangedEvent.next((this.contacts.slice()));

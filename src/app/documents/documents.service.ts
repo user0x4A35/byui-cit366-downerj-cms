@@ -21,7 +21,7 @@ export class DocumentsService {
   getDocuments(): void {
     this
     .http
-    .get('https://byui-cit366-cms-downerj.firebaseio.com/documents.json')
+    .get('http://localhost:3000/documents')
     .subscribe((documents: Document[]) => {
       this.documents = documents;
       this.maxDocumentID = this.getMaxID();
@@ -71,10 +71,27 @@ export class DocumentsService {
       return;
     }
 
-    this.maxDocumentID++;
-    document.id = (this.maxDocumentID).toString();
-    this.documents.push(document);
-    this.storeDocuments();
+    // this.maxDocumentID++;
+    // document.id = (this.maxDocumentID).toString();
+    // this.documents.push(document);
+    // this.storeDocuments();
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    document.id = '';
+    const strDocument = JSON.stringify(document);
+
+    this.http
+    .post('http://localhost:3000/documents', strDocument, {headers: headers})
+    // .map((response: Response) => {
+    //   return response.json();
+    // })
+    .subscribe((documents: Document[]) => {
+      this.documents = documents;
+      this.documentChangedEvent.next(this.documents.slice());
+    });
   }
 
   updateDocument(originalDocument: Document, newDocument: Document): void {
@@ -87,9 +104,25 @@ export class DocumentsService {
       return;
     }
 
-    newDocument.id = originalDocument.id;
-    this.documents[index] = newDocument;
-    this.storeDocuments();
+    // newDocument.id = originalDocument.id;
+    // this.documents[index] = newDocument;
+    // this.storeDocuments();
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    const strDocument = JSON.stringify(newDocument);
+
+    this.http
+    .put(`http://localhost:3000/documents/${originalDocument.id}`, strDocument, {headers: headers})
+    // .map((response: Response) => {
+    //   return response.json();
+    // })
+    .subscribe((documents: Document[]) => {
+      this.documents = documents;
+      this.documentChangedEvent.next(this.documents.slice());
+    });
   }
 
   deleteDocument(document: Document): void {
@@ -102,8 +135,17 @@ export class DocumentsService {
       return;
     }
 
-    this.documents.splice(index, 1);
-    this.storeDocuments();
+    // this.documents.splice(index, 1);
+    // this.storeDocuments();
+
+    this.http.delete(`http://localhost:3000/documents/${document.id}`)
+    // .map((response: Response) => {
+    //   return response.json();
+    // })
+    .subscribe((documents: Document[]) => {
+      this.documents = documents;
+      this.documentChangedEvent.next(this.documents.slice());
+    })
   }
 
   storeDocuments(): void {
@@ -112,7 +154,7 @@ export class DocumentsService {
     header.set('Content-Type', 'application/json');
     this
     .http
-    .put('https://byui-cit366-cms-downerj.firebaseio.com/documents.json', json, {
+    .put('http://localhost:3000/documents', json, {
       headers: header
     }).subscribe(() => {
       this.documentListChangedEvent.next((this.documents.slice()));
