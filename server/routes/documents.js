@@ -39,7 +39,7 @@ router.post('/', (req, res, next) => {
     .then(createdDocument => {
       res.status(201).json({
         message: 'Document added successfully',
-        documentId: createdDocument.id
+        document: createdDocument
       });
     })
     .catch(error => {
@@ -57,7 +57,8 @@ router.put('/:id', (req, res, next) => {
       Document.updateOne({ id: req.params.id }, document)
         .then(result => {
           res.status(204).json({
-            message: 'Document updated successfully'})
+            message: 'Document updated successfully'
+          })
         })
         .catch(error => {
           returnError(res, error);

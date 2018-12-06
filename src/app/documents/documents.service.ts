@@ -21,9 +21,9 @@ export class DocumentsService {
   getDocuments(): void {
     this
     .http
-    .get('http://localhost:3000/documents')
-    .subscribe((documents: Document[]) => {
-      this.documents = documents;
+    .get<{message: String, document: Document}>('http://localhost:3000/documents')
+    .subscribe((response: any) => {
+      this.documents = response.documents;
       this.maxDocumentID = this.getMaxID();
       this.documents.sort((lhs: Document, rhs: Document): number => {
         if (lhs.id < rhs.id) {
@@ -81,16 +81,24 @@ export class DocumentsService {
     });
 
     document.id = '';
-    const strDocument = JSON.stringify(document);
 
     this.http
-    .post('http://localhost:3000/documents', strDocument, {headers: headers})
+    .post<{message: String, document: Document}>('http://localhost:3000/documents', document, {headers: headers})
     // .map((response: Response) => {
     //   return response.json();
     // })
-    .subscribe((documents: Document[]) => {
-      this.documents = documents;
-      this.documentChangedEvent.next(this.documents.slice());
+    .subscribe((response: any) => {
+      this.documents.push(response.document);
+      this.documents.sort((lhs: Document, rhs: Document): number => {
+        if (lhs.id < rhs.id) {
+          return -1;
+        } else if (lhs.id === rhs.id) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+      this.getDocuments();
     });
   }
 
@@ -115,13 +123,12 @@ export class DocumentsService {
     const strDocument = JSON.stringify(newDocument);
 
     this.http
-    .put(`http://localhost:3000/documents/${originalDocument.id}`, strDocument, {headers: headers})
+    .put<{message: String}>(`http://localhost:3000/documents/${originalDocument.id}`, strDocument, {headers: headers})
     // .map((response: Response) => {
     //   return response.json();
     // })
-    .subscribe((documents: Document[]) => {
-      this.documents = documents;
-      this.documentChangedEvent.next(this.documents.slice());
+    .subscribe((response: any) => {
+      this.getDocuments();
     });
   }
 
@@ -138,13 +145,12 @@ export class DocumentsService {
     // this.documents.splice(index, 1);
     // this.storeDocuments();
 
-    this.http.delete(`http://localhost:3000/documents/${document.id}`)
+    this.http.delete<{message: String}>(`http://localhost:3000/documents/${document.id}`)
     // .map((response: Response) => {
     //   return response.json();
     // })
-    .subscribe((documents: Document[]) => {
-      this.documents = documents;
-      this.documentChangedEvent.next(this.documents.slice());
+    .subscribe((response: any) => {
+      this.getDocuments();
     })
   }
 
@@ -157,7 +163,7 @@ export class DocumentsService {
     .put('http://localhost:3000/documents', json, {
       headers: header
     }).subscribe(() => {
-      this.documentListChangedEvent.next((this.documents.slice()));
+      this.getDocuments();
     });
   }
 }

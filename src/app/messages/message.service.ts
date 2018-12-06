@@ -23,8 +23,8 @@ export class MessageService {
     this
     .http
     .get('http://localhost:3000/messages')
-    .subscribe((messages: Message[]) => {
-      this.messages = messages;
+    .subscribe((messages: any) => {
+      this.messages = messages.messages;
       this.maxMessageID = this.getMaxID();
       this.messages.sort((lhs: Message, rhs: Message): number => {
         if (lhs.id < rhs.id) {

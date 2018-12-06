@@ -22,8 +22,8 @@ export class ContactService {
     this
     .http
     .get('http://localhost:3000/contacts')
-    .subscribe((contacts: Contact[]) => {
-      this.contacts = contacts;
+    .subscribe((contacts: any) => {
+      this.contacts = contacts.contacts;
       this.maxContactID = this.getMaxID();
       this.contacts.sort((lhs: Contact, rhs: Contact): number => {
         if (lhs.id < rhs.id) {
