@@ -21,19 +21,11 @@ export class ContactService {
   getContacts(): void {
     this
     .http
-    .get('http://localhost:3000/contacts')
-    .subscribe((contacts: any) => {
-      this.contacts = contacts.contacts;
+    .get<{message: string, contacts: Contact[]}>('http://localhost:3000/contacts')
+    .subscribe((response: any) => {
+      this.contacts = response.contacts;
       this.maxContactID = this.getMaxID();
-      this.contacts.sort((lhs: Contact, rhs: Contact): number => {
-        if (lhs.id < rhs.id) {
-          return -1;
-        } else if (lhs.id === rhs.id) {
-          return 0;
-        } else {
-          return 1;
-        }
-      });
+      this.contacts.sort(compareContactsByID);
       this.contactListChangedEvent.next(this.contacts.slice());
     }, (err: any) => {
       console.error(err);
@@ -41,6 +33,10 @@ export class ContactService {
   }
 
   getContact(id: string): Contact {
+    if (!this.contacts) {
+      return null;
+    }
+
     for (let contact of this.contacts) {
       if (contact.id === id) {
         return contact;
@@ -67,25 +63,17 @@ export class ContactService {
       return;
     }
 
-    // this.maxContactID++;
-    // contact.id = (this.maxContactID).toString();
-    // this.contacts.push(contact);
-    // this.storeContacts();
-
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
 
     contact.id = '';
-    const strContact = JSON.stringify(contact);
 
     this.http
-    .post('http://localhost:3000/contacts', strContact, {headers: headers})
-    // .map((response: Response) => {
-    //   return response.json();
-    // })
-    .subscribe((contacts: Contact[]) => {
-      this.contacts = contacts;
+    .post<{message: string, contact: Contact}>('http://localhost:3000/contacts', contact, {headers: headers})
+    .subscribe((response: any) => {
+      this.contacts.push(response.contact);
+      this.contacts.sort(compareContactsByID);
       this.contactChangedEvent.next(this.contacts.slice());
     });
   }
@@ -100,10 +88,6 @@ export class ContactService {
       return;
     }
 
-    // newContact.id = originalContact.id;
-    // this.contacts[index] = newContact;
-    // this.storeContacts();
-
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
@@ -111,13 +95,9 @@ export class ContactService {
     const strContact = JSON.stringify(newContact);
 
     this.http
-    .put(`http://localhost:3000/contacts/${originalContact.id}`, strContact, {headers: headers})
-    // .map((response: Response) => {
-    //   return response.json();
-    // })
-    .subscribe((contacts: Contact[]) => {
-      this.contacts = contacts;
-      this.contactChangedEvent.next(this.contacts.slice());
+    .put<{message: string}>(`http://localhost:3000/contacts/${originalContact.id}`, strContact, {headers: headers})
+    .subscribe((response: any) => {
+      this.getContacts();
     });
   }
 
@@ -131,16 +111,9 @@ export class ContactService {
       return;
     }
 
-    // this.contacts.splice(index, 1);
-    // this.storeContacts();
-
     this.http.delete(`http://localhost:3000/contacts/${contact.id}`)
-    // .map((response: Response) => {
-    //   return response.json();
-    // })
     .subscribe((contacts: Contact[]) => {
-      this.contacts = contacts;
-      this.contactChangedEvent.next(this.contacts.slice());
+      this.getContacts();
     })
   }
 
@@ -150,10 +123,20 @@ export class ContactService {
     header.set('Content-Type', 'application/json');
     this
     .http
-    .put('http://localhost:3000/contacts', json, {
+    .put<{message: string}>('http://localhost:3000/contacts', json, {
       headers: header
     }).subscribe(() => {
-      this.contactListChangedEvent.next((this.contacts.slice()));
+      this.contactListChangedEvent.next(this.contacts.slice());
     });
+  }
+}
+
+function compareContactsByID(lhs: Contact, rhs: Contact): number {
+  if (lhs.id < rhs.id) {
+    return -1;
+  } else if (lhs.id === rhs.id) {
+    return 0;
+  } else {
+    return 1;
   }
 }

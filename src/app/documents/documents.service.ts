@@ -21,19 +21,11 @@ export class DocumentsService {
   getDocuments(): void {
     this
     .http
-    .get<{message: String, document: Document}>('http://localhost:3000/documents')
+    .get<{message: string, documents: Document[]}>('http://localhost:3000/documents')
     .subscribe((response: any) => {
       this.documents = response.documents;
       this.maxDocumentID = this.getMaxID();
-      this.documents.sort((lhs: Document, rhs: Document): number => {
-        if (lhs.id < rhs.id) {
-          return -1;
-        } else if (lhs.id === rhs.id) {
-          return 0;
-        } else {
-          return 1;
-        }
-      });
+      this.documents.sort(compareDocumentsByID);
       this.documentListChangedEvent.next(this.documents.slice());
     }, (err: any) => {
       console.error(err);
@@ -71,11 +63,6 @@ export class DocumentsService {
       return;
     }
 
-    // this.maxDocumentID++;
-    // document.id = (this.maxDocumentID).toString();
-    // this.documents.push(document);
-    // this.storeDocuments();
-
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
@@ -83,22 +70,11 @@ export class DocumentsService {
     document.id = '';
 
     this.http
-    .post<{message: String, document: Document}>('http://localhost:3000/documents', document, {headers: headers})
-    // .map((response: Response) => {
-    //   return response.json();
-    // })
+    .post<{message: string, document: Document}>('http://localhost:3000/documents', document, {headers: headers})
     .subscribe((response: any) => {
       this.documents.push(response.document);
-      this.documents.sort((lhs: Document, rhs: Document): number => {
-        if (lhs.id < rhs.id) {
-          return -1;
-        } else if (lhs.id === rhs.id) {
-          return 0;
-        } else {
-          return 1;
-        }
-      });
-      this.getDocuments();
+      this.documents.sort(compareDocumentsByID);
+      this.documentChangedEvent.next(this.documents.slice());
     });
   }
 
@@ -112,10 +88,6 @@ export class DocumentsService {
       return;
     }
 
-    // newDocument.id = originalDocument.id;
-    // this.documents[index] = newDocument;
-    // this.storeDocuments();
-
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
@@ -123,10 +95,7 @@ export class DocumentsService {
     const strDocument = JSON.stringify(newDocument);
 
     this.http
-    .put<{message: String}>(`http://localhost:3000/documents/${originalDocument.id}`, strDocument, {headers: headers})
-    // .map((response: Response) => {
-    //   return response.json();
-    // })
+    .put<{message: string}>(`http://localhost:3000/documents/${originalDocument.id}`, strDocument, {headers: headers})
     .subscribe((response: any) => {
       this.getDocuments();
     });
@@ -142,13 +111,7 @@ export class DocumentsService {
       return;
     }
 
-    // this.documents.splice(index, 1);
-    // this.storeDocuments();
-
     this.http.delete<{message: String}>(`http://localhost:3000/documents/${document.id}`)
-    // .map((response: Response) => {
-    //   return response.json();
-    // })
     .subscribe((response: any) => {
       this.getDocuments();
     })
@@ -160,10 +123,20 @@ export class DocumentsService {
     header.set('Content-Type', 'application/json');
     this
     .http
-    .put('http://localhost:3000/documents', json, {
+    .put<{message: string}>('http://localhost:3000/documents', json, {
       headers: header
     }).subscribe(() => {
-      this.getDocuments();
+      this.documentChangedEvent.next(this.documents.slice());
     });
+  }
+}
+
+function compareDocumentsByID(lhs: Document, rhs: Document): number {
+  if (lhs.id < rhs.id) {
+    return -1;
+  } else if (lhs.id === rhs.id) {
+    return 0;
+  } else {
+    return 1;
   }
 }

@@ -47,7 +47,7 @@ router.post('/', (req, res, next) => {
     .then(createdContact => {
       res.status(201).json({
         message: 'Contact added successfully',
-        contactId: createdContact.id
+        contact: createdContact
       });
     })
     .catch(error => {

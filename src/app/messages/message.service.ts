@@ -22,19 +22,11 @@ export class MessageService {
   initMessages(): void {
     this
     .http
-    .get('http://localhost:3000/messages')
-    .subscribe((messages: any) => {
-      this.messages = messages.messages;
+    .get<{message: string, messages: Message[]}>('http://localhost:3000/messages')
+    .subscribe((response: any) => {
+      this.messages = response.messages;
       this.maxMessageID = this.getMaxID();
-      this.messages.sort((lhs: Message, rhs: Message): number => {
-        if (lhs.id < rhs.id) {
-          return -1;
-        } else if (lhs.id === rhs.id) {
-          return 0;
-        } else {
-          return 1;
-        }
-      });
+      this.messages.sort(compareMessagesByID);
       this.messagesChangedEvent.next(this.messages.slice());
     }, (err: any) => {
       console.error(err);
@@ -42,6 +34,10 @@ export class MessageService {
   }
 
   getMessage(id: string): Message {
+    if (!this.messages) {
+      return null;
+    }
+
     for (let message of this.messages) {
       if (message.id === id) {
         return message;
@@ -68,23 +64,17 @@ export class MessageService {
       return;
     }
 
-    // this.messages.push(message);
-    // this.storeMessages();
-
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
 
     message.id = '';
-    const strMessage = JSON.stringify(message);
 
     this.http
-    .post('http://localhost:3000/messages', strMessage, {headers: headers})
-    // .map((response: Response) => {
-    //   return response.json();
-    // })
-    .subscribe((messages: Message[]) => {
-      this.messages = messages;
+    .post<{message: string, newMessage: Message}>('http://localhost:3000/messages', message, {headers: headers})
+    .subscribe((response: any) => {
+      this.messages.push(response.newMessage);
+      this.messages.sort(compareMessagesByID);
       this.messagesChangedEvent.next(this.messages.slice());
     });
   }
@@ -95,10 +85,20 @@ export class MessageService {
     header.set('Content-Type', 'application/json');
     this
     .http
-    .put('http://localhost:3000/messages', json, {
+    .put<{message: string}>('http://localhost:3000/messages', json, {
       headers: header
     }).subscribe(() => {
-      this.messagesChangedEvent.next((this.messages.slice()));
+      this.messagesChangedEvent.next(this.messages.slice());
     });
+  }
+}
+
+function compareMessagesByID(lhs: Message, rhs: Message): number {
+  if (lhs.id < rhs.id) {
+    return -1;
+  } else if (lhs.id === rhs.id) {
+    return 0;
+  } else {
+    return 1;
   }
 }
